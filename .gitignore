@@ -1,6 +1,10 @@
 download
 .vscode
+dist
+build
 
 token
 .token
 .DS_Store
+*.spec
+*.zip

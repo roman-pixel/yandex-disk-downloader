@@ -2,9 +2,11 @@ import os
 import sys
 import yadisk
 import base64
+import win32file
 
 
 def create_token():
+    file_token_name = 'token'
     token = input("Введите новый токен: ")
 
     if token == "":
@@ -15,18 +17,18 @@ def create_token():
     encoded_token = base64.b64encode(token.encode("utf-8")).decode("utf-8")
 
     # Сохранение закодированного токена в файл
-    with open("token", "w") as token_file:
+    with open(file_token_name, "w") as token_file:
         token_file.write(encoded_token)
 
     if os.name == "nt":
-        # В Windows, добавляем атрибут скрытого файла
-        file_attributes = os.stat("token").st_file_attributes
-        os.stat("token").st_file_attributes = file_attributes | 2
+        # Windows
+        win32file.SetFileAttributes(
+            file_token_name, win32file.FILE_ATTRIBUTE_HIDDEN)
     elif os.name == "posix":
-        # В macOS, добавляем точку перед именем файла, чтобы его было сложнее найти
-        os.rename("token", ".token")
+        # В macOS/linux, добавляем точку перед именем файла, чтобы его было сложнее найти
+        os.rename(file_token_name, ".token")
     else:
-        return
+        sys.exit(0)
 
 
 def token():
@@ -37,6 +39,8 @@ def token():
     elif os.name == "nt":
         # Windows
         hidden_file_path = "token"
+    else:
+        sys.exit(0)
 
     # Чтение закодированного токена из файла
     with open(hidden_file_path, "r") as token_file:
@@ -59,6 +63,8 @@ def main():
     elif os.name == "nt":
         # Windows
         hidden_file_path = "token"
+    else:
+        sys.exit(0)
 
     if not os.path.isfile(hidden_file_path):
         print("Файл token не найден")
@@ -118,6 +124,7 @@ def main():
                 print(f'Скачивается: {file.name}')
                 yadisk_token.download(
                     f"{dir}/{file.name}", f"download/{file.name}")
+                print(f'{file.name} - загрузка  завершена')
                 count_downloaded_files += 1
             except Exception as e:
                 print(f"Не удалось скачать {file.name}. Ошибка:\n{e}")
