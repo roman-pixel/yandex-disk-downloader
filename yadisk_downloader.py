@@ -1,16 +1,20 @@
 import os
+import sys
 import yadisk
 import base64
 
 
 def create_token():
-    print("Введите новый токен:")
-    token = input()
+    token = input("Введите новый токен: ")
+
+    if token == "":
+        print("Неверное значение")
+        sys.exit(0)
 
     # Кодирование токена
     encoded_token = base64.b64encode(token.encode("utf-8")).decode("utf-8")
 
-    # # Сохранение закодированного токена в файл
+    # Сохранение закодированного токена в файл
     with open("token", "w") as token_file:
         token_file.write(encoded_token)
 
@@ -48,10 +52,17 @@ def main():
     yadisk_token = ''
     count_downloaded_files = 0
 
-    if not os.path.isfile('token'):
+    # Определение пути к скрытому файлу в зависимости от операционной системы
+    if os.name == "posix":
+        # Linux и macOS
+        hidden_file_path = ".token"
+    elif os.name == "nt":
+        # Windows
+        hidden_file_path = "token"
+
+    if not os.path.isfile(hidden_file_path):
         print("Файл token не найден")
-        print("Создать новый файл? [Y/n]")
-        confirm_create_token = input()
+        confirm_create_token = input("Создать новый файл? [Y/n]: ")
 
         if confirm_create_token.casefold() == 'y':
             create_token()
@@ -70,8 +81,7 @@ def main():
             print("токен валиден")
         else:
             print("токен не валиден")
-            print("Хотите обновить токен? [Y/n]")
-            confirm_create_token = input()
+            confirm_create_token = input("Хотите обновить токен? [Y/n]: ")
 
             if confirm_create_token.casefold() == 'y':
                 create_token()
@@ -85,11 +95,11 @@ def main():
         print(f"ошибка проверки токена:\n{e}")
         return
 
-    print("\nВведите путь до папки в формате \"/some/path\" (если это корень диска - оставьте пыстым и нажмите Enter):")
-    dir = input()
+    dir = input(
+        "\nВведите путь до папки в формате \"/some/path\" (если это корень диска - оставьте пыстым и нажмите Enter): ")
 
     # Получает общую информацию о диске
-    # print(y.get_disk_info())
+    # print(yadisk_token.get_disk_info())
 
     # Выводит содержимое "/some/path"
     try:
@@ -117,9 +127,8 @@ def main():
 
     # # Безвозвратно удаляет "/file-to-remove"
     if dir != '':
-        print(
-            f"\nВы действительно хотите безвозвратно удалить \"/{dir}\"? [Y/n]")
-        confirm_del = input()
+        confirm_del = input(
+            f"\nВы действительно хотите безвозвратно удалить \"/{dir}\"? [Y/n]: ")
 
         if confirm_del.casefold() == 'y':
             yadisk_token.remove(dir, permanently=True)
@@ -130,9 +139,8 @@ def main():
             print('Неверное значение')
             return
     else:
-        print(
-            f"\nВы действительно хотите безвозвратно удалить {count_downloaded_files} файлов? [Y/n]")
-        confirm_del = input()
+        confirm_del = input(
+            f"\nВы действительно хотите безвозвратно удалить {count_downloaded_files} файлов? [Y/n]: ")
 
         if confirm_del.casefold() == 'y':
             for file in file_list:
